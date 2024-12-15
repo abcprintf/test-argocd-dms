@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pwa-dms-frontend-deployment
+  namespace: dms-pwa
+  labels:
+    app: pwa-dms-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pwa-dms-frontend
+  template:
+    metadata:
+      labels:
+        app: pwa-dms-frontend
+    spec:
+      containers:
+      - name: pwa-dms-frontend-container
+        image: abcprintf/pwa-dms-frontend-app:1.0.12
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        # delay for readinessProbe
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        # delay for readinessProbe
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+        # delay for livenessProbe
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        # delay for livenessProbe
+        resources:  # เพิ่ม Resource Limits
+          requests:
+            cpu: "500m"           # CPU ขั้นต่ำที่ต้องการ
+            memory: "256Mi"       # Memory ขั้นต่ำที่ต้องการ
+          limits:
+            cpu: "1"              # CPU สูงสุดที่อนุญาต
+            memory: "512Mi"       # Memory สูงสุดที่อนุญาต
+      imagePullSecrets:
+      - name: dockerhub-secret
+      nodeSelector:  # กำหนด Node ที่ต้องการให้ Pod ทำงาน
+        app-role: frontend
